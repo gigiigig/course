@@ -35,9 +35,8 @@ instance Apply Id where
     Id (a -> b)
     -> Id a
     -> Id b
-  (<*>) =
-    error "todo: Course.Apply (<*>)#instance Id"
-
+  (<*>) (Id f) a = mapId f a 
+    
 -- | Implement @Apply@ instance for @List@.
 --
 -- >>> (+1) :. (*2) :. Nil <*> 1 :. 2 :. 3 :. Nil
@@ -47,9 +46,8 @@ instance Apply List where
     List (a -> b)
     -> List a
     -> List b
-  (<*>) =
-    error "todo: Course.Apply (<*>)#instance List"
-
+  (<*>) lf la  = flatMap (\f -> map f la) lf
+    
 -- | Implement @Apply@ instance for @Optional@.
 --
 -- >>> Full (+8) <*> Full 7
@@ -65,8 +63,7 @@ instance Apply Optional where
     Optional (a -> b)
     -> Optional a
     -> Optional b
-  (<*>) =
-    error "todo: Course.Apply (<*>)#instance Optional"
+  (<*>) fo oa = bindOptional (\f -> mapOptional f oa) fo
 
 -- | Implement @Apply@ instance for reader.
 --
@@ -89,8 +86,7 @@ instance Apply ((->) t) where
     ((->) t (a -> b))
     -> ((->) t a)
     -> ((->) t b)
-  (<*>) =
-    error "todo: Course.Apply (<*>)#instance ((->) t)"
+  fab <*> fa = (\x -> fab x $ fa x) 
 
 -- | Apply a binary function in the environment.
 --
@@ -117,8 +113,9 @@ lift2 ::
   -> f a
   -> f b
   -> f c
-lift2 =
-  error "todo: Course.Apply#lift2"
+{-lift2 f fa fb = -}
+  {-(f <$> fa) <*> fb-}
+lift2 f = (<*>) . (f <$>)  
 
 -- | Apply a ternary function in the environment.
 --
@@ -149,8 +146,9 @@ lift3 ::
   -> f b
   -> f c
   -> f d
-lift3 =
-  error "todo: Course.Apply#lift2"
+{-lift3 f fa fb fc = ((f <$> fa) <*> fb) <*> fc-}
+{-lift3 f fa = (<*>) . (<*>) (f <$> fa) -}
+lift3 f fa fb = (<*>) $ (lift2 f fa fb) 
 
 -- | Apply a quaternary function in the environment.
 --
@@ -182,8 +180,7 @@ lift4 ::
   -> f c
   -> f d
   -> f e
-lift4 =
-  error "todo: Course.Apply#lift4"
+lift4 f fa fb fc = (<*>) $ (lift3 f fa fb fc) 
 
 -- | Sequence, discarding the value of the first argument.
 -- Pronounced, right apply.
@@ -208,8 +205,7 @@ lift4 =
   f a
   -> f b
   -> f b
-(*>) =
-  error "todo: Course.Apply#(*>)"
+fa *> fb = lift2 (\_ b -> b) fa fb
 
 -- | Sequence, discarding the value of the second argument.
 -- Pronounced, left apply.
@@ -234,8 +230,7 @@ lift4 =
   f b
   -> f a
   -> f b
-(<*) =
-  error "todo: Course.Apply#(<*)"
+(<*) fb fa = lift2 (\b _ -> b) fb fa
 
 -----------------------
 -- SUPPORT LIBRARIES --
