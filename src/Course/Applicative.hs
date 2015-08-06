@@ -157,8 +157,8 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering f list =
-  foldRight (\elem acc-> lift2 (\a b -> if b then elem :. a else a) acc (f elem)) (pure Nil) list         
+filtering f  =
+  foldRight (\elem acc-> lift2 (\b a -> if b then elem :. a else a) (f elem) acc) (pure Nil)          
 
 -----------------------
 -- SUPPORT LIBRARIES --
